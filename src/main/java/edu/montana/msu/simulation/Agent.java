@@ -21,4 +21,6 @@ public interface Agent {
 	public void receive(Message m);
 	
 	public void sendMessage();
+
+    public String logInfo();
 }

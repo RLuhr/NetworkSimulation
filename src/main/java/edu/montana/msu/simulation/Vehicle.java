@@ -24,8 +24,10 @@ public class Vehicle implements Agent{
 	private double timeToHeartbeat;
 	private double timeSinceRTL;
 	private Map<Message, Double> sentMessageDuration;
-	
-	public Vehicle(Tuple<Double, Double> loc, double vel, int id) {
+    private boolean connected; //NOT TO BE CONFUSED WITH PARENT, THIS SHOWS ACTUAL CONNECTION, PARENT SHOWS EXPECTED CONNECTION
+	private Simulator sim;
+
+	public Vehicle(Tuple<Double, Double> loc, double vel, int id, Simulator sim) {
 		this.messageQueue = new LinkedList<Message>();
 		this.location = loc;
 		this.velocity = vel;
@@ -37,6 +39,8 @@ public class Vehicle implements Agent{
 		this.timeToHeartbeat = Parameters.HEARTBEAT;
 		this.timeSinceRTL = -1;
         this.sentMessageDuration = new HashMap<Message, Double>();
+        this.sim = sim;
+        this.connected = false;
 	}
 	
 	/* (non-Javadoc)
@@ -71,7 +75,9 @@ public class Vehicle implements Agent{
 		if ((this.timeSinceRTL > Parameters.RTLRESENDTIME) && (this.parent == -1)) {
 			this.sendRTL();
 		}
-
+        if (this.parent != -1) {
+            this.connected = sim.isConnected(this.id, this.parent);
+        }
 	}
 
     private void checkMessageTimings() {
@@ -124,7 +130,7 @@ public class Vehicle implements Agent{
         Message newM = new Message(MessageType.REGULARMESSAGE, generateId(), -1, m.origin());
         m.setBroadcaster(this.id);
         this.messageQueue.add(newM);
-        this.sentMessageDuration.put(newM, 0.0);
+        this.sentMessageDuration.put(newM   , 0.0);
     }
 
 	/* (non-Javadoc)
@@ -181,6 +187,7 @@ public class Vehicle implements Agent{
 	}
 	private void receivedDTFO(Message m) {
 		this.parent = -1;
+        this.connected = false;
 		this.messageQueue.add(new Message(MessageType.RTL, generateId(), this.id, -1));
 	}
 	private void receiveRTL(Message m) {
@@ -189,6 +196,7 @@ public class Vehicle implements Agent{
 	private void receiveOKTL(Message m) {
 		//update personal map for parent
 		this.parent = m.origin();
+        this.connected = true;
 		this.timeSinceHeartbeat = 0;
 	}
 	private void receiveXTL(Message m) {
@@ -234,5 +242,22 @@ public class Vehicle implements Agent{
 		this.hasService = true;
 	}
 
+
+    public String logInfo() {
+        String info = "#Vehicle:\n"+this.id;
+        info += "\n#Location:\n"+this.location;
+        info += "\n#Parent:\n"+this.parent;
+        info += "\n#Children:";
+        for (int child:this.children) {
+            info += "\n"+child;
+        }
+        info += "\n#MessageQueue:";
+        for (Message m:this.messageQueue) { //this may destroy the message queue... check this
+            info += "\n"+m.toString();
+        }
+        info += "\n#ShouldBeConnected:\n"+this.connected;
+
+        return info;
+    }
 	
 }

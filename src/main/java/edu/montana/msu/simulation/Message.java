@@ -44,4 +44,8 @@ public class Message {
 	public void setBroadcaster(int id) {
 		this.broadcaster = id;
 	}
+
+    public String toString() {
+        return typ+ " : " + id + " : " + originId + " : " + destination + " : " + broadcaster;
+    }
 }

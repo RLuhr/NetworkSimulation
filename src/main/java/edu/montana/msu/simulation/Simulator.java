@@ -34,7 +34,7 @@ public class Simulator {
 	
 	public void run() {
 		int done = 0;
-		while(done < 1000000000) {
+		while(done < 10) {
 			for (Integer agentId:agentMap.keySet()) {
 				Agent agent = agentMap.get(agentId);
 				
@@ -51,8 +51,12 @@ public class Simulator {
 	private Agent buildAgent() {
 		this.maxId++;
 		double vel = Parameters.SPEED.sample();//normal distribution around speed limit. 75 mph.
-		return new Vehicle(startingPoint, vel, this.maxId);
+		return new Vehicle(startingPoint, vel, this.maxId, this);
 	}
+
+    public boolean isConnected(int id1, int id2) {
+        return (Utils.distance(agentMap.get(id1).location(), agentMap.get(id2).location()) <= Parameters.BROADCASTDISTANCE);
+    }
 	
 	private void broadcast(Message message, Agent origin) {
 		for (Integer agentId: agentMap.keySet()) {
@@ -64,4 +68,6 @@ public class Simulator {
 			}
 		}
 	}
+
+
 }
