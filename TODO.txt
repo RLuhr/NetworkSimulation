@@ -1,0 +1,9 @@
+finalize vehicle:
+	-logic to resend previously attempted message or hear broadcast of your message from parent
+
+add Logging
+	-vehicle
+		positional
+		parent/child
+		messagequeue
+		think connected
