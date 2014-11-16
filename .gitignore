@@ -1,4 +1,2 @@
 #exclude the dir .idea
 .idea/*
-#exclude .iml files
-*.iml
