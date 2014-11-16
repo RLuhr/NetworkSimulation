@@ -4,7 +4,7 @@
 package edu.montana.msu;
 
 /**
- * @author Rachael Luhr
+ * @author Rachael Luhr, Ryan Nix, Kathryn Manning
  * 
  */
 public class Tuple<X, Y> {

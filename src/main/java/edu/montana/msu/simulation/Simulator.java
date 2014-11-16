@@ -12,7 +12,7 @@ import edu.montana.msu.Tuple;
 import edu.montana.msu.Utils;
 import org.apache.commons.math3.distribution.NormalDistribution;
 /**
- * @author Rachael Luhr
+ * @author Rachael Luhr, Ryan Nix, Kathryn Manning
  *
  */
 

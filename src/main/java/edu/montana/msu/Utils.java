@@ -7,7 +7,7 @@ package edu.montana.msu;
 import edu.montana.msu.Tuple;
 import java.lang.Math;
 /**
- * @author Rachael Luhr
+ * @author Rachael Luhr, Ryan Nix, Kathryn Manning
  *
  */
 public class Utils {

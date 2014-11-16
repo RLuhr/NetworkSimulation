@@ -3,7 +3,7 @@ package edu.montana.msu;
 import edu.montana.msu.simulation.Simulator;
 
 /**
- * @author Rachael Luhr
+ * @author Rachael Luhr, Ryan Nix, Kathryn Manning
  *
  */
 public class Main{

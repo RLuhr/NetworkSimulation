@@ -5,7 +5,7 @@ package edu.montana.msu.simulation;
 
 import edu.montana.msu.Tuple;
 /**
- * @author Rachael Luhr
+ * @author Rachael Luhr, Ryan Nix, Kathryn Manning
  *
  */
 public interface Agent {

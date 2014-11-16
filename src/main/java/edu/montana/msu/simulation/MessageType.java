@@ -4,7 +4,7 @@
 package edu.montana.msu.simulation;
 
 /**
- * @author Rachael Luhr
+ * @author Rachael Luhr, Ryan Nix, Kathryn Manning
  *
  */
 public enum MessageType {

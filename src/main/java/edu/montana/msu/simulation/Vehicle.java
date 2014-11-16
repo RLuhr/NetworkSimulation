@@ -13,7 +13,7 @@ import edu.montana.msu.simulation.Message;
 import edu.montana.msu.simulation.MessageType;
 
 /**
- * @author Rachael Luhr
+ * @author Rachael Luhr, Ryan Nix, Kathryn Manning
  *
  */
 public class Vehicle implements Agent{

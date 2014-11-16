@@ -6,7 +6,7 @@ package edu.montana.msu.simulation;
 import org.apache.commons.math3.distribution.NormalDistribution;
 
 /**
- * @author Rachael Luhr
+ * @author Rachael Luhr, Ryan Nix, Kathryn Manning
  *
  */
 public class Parameters {
