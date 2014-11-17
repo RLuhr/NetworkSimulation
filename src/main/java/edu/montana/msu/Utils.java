@@ -27,7 +27,7 @@ public class Utils {
 		return Math.sqrt(Math.pow(loc1.x+loc2.x, 2) + Math.pow(loc1.y+loc2.y, 2)); 
 	}
 
-    public static void log(Agent a) {
+    public static void log(String input) {
         FileHandler fh;
         try {
 
@@ -35,7 +35,7 @@ public class Utils {
             fh = new FileHandler("SimulationLogfile.log", true);
             logger.addHandler(fh);
 
-            logger.info(a.logInfo());
+            logger.info(input);
 
         } catch (SecurityException e) {
             e.printStackTrace();
@@ -44,7 +44,4 @@ public class Utils {
         }
     }
 
-    public static void log(Simulator sim) {
-
-    }
 }

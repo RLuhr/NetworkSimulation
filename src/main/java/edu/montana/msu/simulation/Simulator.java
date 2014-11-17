@@ -6,6 +6,7 @@ package edu.montana.msu.simulation;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.sun.xml.internal.rngom.digested.DDataPattern;
 import edu.montana.msu.simulation.Agent;
 import edu.montana.msu.simulation.Message;
 import edu.montana.msu.Tuple;
@@ -33,8 +34,15 @@ public class Simulator {
 	private int maxId = 0;
 	
 	public void run() {
-		int done = 0;
-		while(done < 10) {
+		int time = 0;
+        boolean done = false;
+		while(!done) {
+            Utils.log("#TIMESTEP: "+time);
+            if (Parameters.TRAFFIC.sample() > 0.5) { //TODO: this needs fixing for the actual probability
+                Agent a = this.buildAgent();
+                agentMap.put(a.id(), a);
+                Utils.log("#Vehicle generated: " + a.id());
+            }
 			for (Integer agentId:agentMap.keySet()) {
 				Agent agent = agentMap.get(agentId);
 				
@@ -43,8 +51,12 @@ public class Simulator {
 				broadcast(m, agent);
 				
 				agent.update(Parameters.TIMESTEP, road);
+                Utils.log(agent.logInfo());
 			}
-			done++;
+			time++;
+            if (time > 10)  {
+                done = true;
+            }
 		}
 	}
 	

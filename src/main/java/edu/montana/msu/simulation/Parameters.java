@@ -15,4 +15,5 @@ public class Parameters {
 	public static final double BROADCASTDISTANCE = 300.00; //meters
 	public static final double TIMESTEP = 0.001; //This must be >1 to workiva
 	public static final double RTLRESENDTIME = HEARTBEAT;
+    public static final NormalDistribution TRAFFIC = new NormalDistribution(1, 1);//TODO; fill me in
 }

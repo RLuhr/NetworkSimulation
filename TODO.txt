@@ -1,9 +1,5 @@
-finalize vehicle:
-	-logic to resend previously attempted message or hear broadcast of your message from parent
+Fix entry probability for generating new vehicles
 
-add Logging
-	-vehicle
-		positional
-		parent/child
-		messagequeue
-		think connected
+Double check logic for handling a data packet that is not your own, and your parent disconnects
+
+Potentially set an exit point for this deadzone
