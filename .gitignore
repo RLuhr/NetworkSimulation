@@ -2,3 +2,4 @@
 .idea/*
 #exclude compiled files
 /bin
+*.log

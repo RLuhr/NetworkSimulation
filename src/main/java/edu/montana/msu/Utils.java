@@ -28,19 +28,24 @@ public class Utils {
 	}
 
     public static void log(String input) {
-        FileHandler fh;
+        FileHandler fh = null;
         try {
 
             // This block configure the logger with handler and formatter
             fh = new FileHandler("SimulationLogfile.log", true);
             logger.addHandler(fh);
-
-            logger.info(input);
+            System.out.println("LOGGING :"+input);
+//            logger.info(input);
+            logger.log(Level.INFO, input, (Throwable)null);
 
         } catch (SecurityException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            if(fh != null) {
+                fh.close();
+            }
         }
     }
 

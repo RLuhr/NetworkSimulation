@@ -1,3 +1,5 @@
-Double check logic for handling a data packet that is not your own, and your parent disconnects
-
 Potentially set an exit point for this deadzone
+
+Fix logging
+
+If parent is not connected, we still consider the child connected, is this a problem?

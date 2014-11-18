@@ -50,7 +50,7 @@ public class Simulator {
                 Utils.log(agent.logInfo());
 			}
 			time++;
-            if (time > 10)  {
+            if (time > Parameters.DURATION)  {
                 done = true;
             }
 		}

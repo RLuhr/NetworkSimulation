@@ -11,6 +11,7 @@ import org.apache.commons.math3.distribution.UniformRealDistribution;
  *
  */
 public class Parameters {
+    public static final int DURATION = 1000;
 	public static final double HEARTBEAT = 0.25;//250 ms
 	public static final NormalDistribution SPEED = new NormalDistribution(33.5, 2.7); //mps mean of 75 mph, sd of 6 mph
 	public static final double BROADCASTDISTANCE = 300.00; //meters
@@ -18,6 +19,9 @@ public class Parameters {
 	public static final double RTLRESENDTIME = HEARTBEAT;
     public static final double HIGHTRAFFIC = 0.104; //% car per second
     public static final double LOWTRAFFIC = 0.042;
-    public static final double TRAFFICCHANCE = HIGHTRAFFIC*TIMESTEP;
+    public static final double TRAFFICCHANCE = 0.5;//HIGHTRAFFIC*TIMESTEP;
     public static final UniformRealDistribution TRAFFICRATE = new UniformRealDistribution();
+    public static final double DTFOWAITTIME = 0.1;
+    public static final double DISTANCETODEADZONE = 500;
 }
+

@@ -26,6 +26,7 @@ public class Vehicle implements Agent{
 	private Map<Message, Double> sentMessageDuration;
     private boolean connected; //NOT TO BE CONFUSED WITH PARENT, THIS SHOWS ACTUAL CONNECTION, PARENT SHOWS EXPECTED CONNECTION
 	private Simulator sim;
+    private double timeWithoutConnection;
 
 	public Vehicle(Tuple<Double, Double> loc, double vel, int id, Simulator sim) {
 		this.messageQueue = new LinkedList<Message>();
@@ -37,10 +38,12 @@ public class Vehicle implements Agent{
 		this.timeSinceHeartbeat = 0;
 		this.hasService = true;
 		this.timeToHeartbeat = Parameters.HEARTBEAT;
-		this.timeSinceRTL = -1;
+		this.timeSinceRTL = -1; //this allows for instant sendoff of RTL when connection is lost
         this.sentMessageDuration = new HashMap<Message, Double>();
         this.sim = sim;
         this.connected = false;
+        this.timeWithoutConnection = 0;
+        this.hasService = true;
 	}
 	
 	/* (non-Javadoc)
@@ -53,31 +56,43 @@ public class Vehicle implements Agent{
 		
 		//update location and timing info.
 		this.location = road.newPosition(location, velocity*timestep);
+        if(this.location.x > Parameters.DISTANCETODEADZONE) {
+            this.hasService = false;
+        }
         updateWaitTimes(timestep);
 
 		//If you have children, and its time to heartbeat, do it
 		if ((this.timeToHeartbeat <= 0) && (children.size() > 0)) {
 			this.messageQueue.add(new Message(MessageType.HEARTBEAT, generateId(), this.id, -1, true));
 		}
-		
-		//Check if parent heartbeat times out, if so then notify children of disconnect, and add RTL
-		if(this.timeSinceHeartbeat > Parameters.HEARTBEAT) {
-			//we have disconnected from the network!
-			this.parent = -1;
-			this.messageQueue.add(new Message(MessageType.DTFO, generateId(), this.id, -1, false)); //ORDER MATTERS
-			this.sendRTL();
-		}
-				
-		//If a heartbeat goes by without confirmation of message forward, resend message
-        this.checkMessageTimings();
-		
-		//If RTL has not been ok'd by the RTL send time, and no parent exists, reattempt RTL
-		if ((this.timeSinceRTL > Parameters.RTLRESENDTIME) && (this.parent == -1)) {
-			this.sendRTL();
-		}
+
+        if (!this.hasService) {
+            //Check if parent heartbeat times out, if so then notify children of disconnect, and add RTL
+            if(this.timeSinceHeartbeat > Parameters.HEARTBEAT) {
+                //we have disconnected from the network!
+                this.parent = -1;
+                this.sendRTL();
+                this.timeWithoutConnection = 0;
+            }
+
+            //if you have children and you wait an appropriate time without connection, DTFO
+            if ((this.children.size() > 0) && (Parameters.DTFOWAITTIME > this.timeWithoutConnection)) {
+                this.messageQueue.add(new Message(MessageType.DTFO, generateId(), this.id, -1, false)); //ORDER MATTERS
+                this.children.clear();
+            }
+
+            //If a heartbeat goes by without confirmation of message forward, resend message
+            this.checkMessageTimings();
+
+            //If RTL has not been ok'd by the RTL send time, and no parent exists, reattempt RTL
+            if ((this.timeSinceRTL > Parameters.RTLRESENDTIME) && (this.parent == -1)) {
+                this.sendRTL();
+            }
+        }
         if (this.parent != -1) {
             this.connected = sim.isConnected(this.id, this.parent);
         }
+
 	}
 
     private void checkMessageTimings() {
@@ -101,6 +116,9 @@ public class Vehicle implements Agent{
         this.timeSinceHeartbeat += timestep;
         if(this.timeToHeartbeat > 0) {
             this.timeToHeartbeat -= timestep;
+        }
+        if ((this.parent == -1) && (this.hasService == false)) {
+            this.timeWithoutConnection += timestep;
         }
     }
 	
