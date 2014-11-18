@@ -2,6 +2,8 @@ package edu.montana.msu;
 
 import edu.montana.msu.simulation.Simulator;
 
+import org.apache.commons.math3.distribution.UniformRealDistribution;
+
 /**
  * @author Rachael Luhr, Ryan Nix, Kathryn Manning
  *

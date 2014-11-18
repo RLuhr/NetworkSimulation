@@ -1,5 +1,3 @@
-Fix entry probability for generating new vehicles
-
 Double check logic for handling a data packet that is not your own, and your parent disconnects
 
 Potentially set an exit point for this deadzone

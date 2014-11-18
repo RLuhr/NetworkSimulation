@@ -6,12 +6,9 @@ package edu.montana.msu.simulation;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.sun.xml.internal.rngom.digested.DDataPattern;
-import edu.montana.msu.simulation.Agent;
-import edu.montana.msu.simulation.Message;
 import edu.montana.msu.Tuple;
 import edu.montana.msu.Utils;
-import org.apache.commons.math3.distribution.NormalDistribution;
+
 /**
  * @author Rachael Luhr, Ryan Nix, Kathryn Manning
  *
@@ -27,7 +24,6 @@ import org.apache.commons.math3.distribution.NormalDistribution;
 
 public class Simulator {
 
-	//Pull these into constants...
 	private Tuple<Double, Double> startingPoint = new Tuple<Double, Double>(0.0, 0.0);
 	private Map<Integer, Agent> agentMap = new HashMap<Integer, Agent>();
 	private Road road = new Road();
@@ -38,7 +34,7 @@ public class Simulator {
         boolean done = false;
 		while(!done) {
             Utils.log("#TIMESTEP: "+time);
-            if (Parameters.TRAFFIC.sample() > 0.5) { //TODO: this needs fixing for the actual probability
+            if (Parameters.TRAFFICRATE.sample() < Parameters.TRAFFICCHANCE) {
                 Agent a = this.buildAgent();
                 agentMap.put(a.id(), a);
                 Utils.log("#Vehicle generated: " + a.id());
