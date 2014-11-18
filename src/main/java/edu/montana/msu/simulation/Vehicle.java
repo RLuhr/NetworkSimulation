@@ -57,14 +57,14 @@ public class Vehicle implements Agent{
 
 		//If you have children, and its time to heartbeat, do it
 		if ((this.timeToHeartbeat <= 0) && (children.size() > 0)) {
-			this.messageQueue.add(new Message(MessageType.HEARTBEAT, generateId(), this.id, -1));
+			this.messageQueue.add(new Message(MessageType.HEARTBEAT, generateId(), this.id, -1, true));
 		}
 		
 		//Check if parent heartbeat times out, if so then notify children of disconnect, and add RTL
 		if(this.timeSinceHeartbeat > Parameters.HEARTBEAT) {
 			//we have disconnected from the network!
 			this.parent = -1;
-			this.messageQueue.add(new Message(MessageType.DTFO, generateId(), this.id, -1)); //ORDER MATTERS
+			this.messageQueue.add(new Message(MessageType.DTFO, generateId(), this.id, -1, false)); //ORDER MATTERS
 			this.sendRTL();
 		}
 				
@@ -105,7 +105,7 @@ public class Vehicle implements Agent{
     }
 	
 	private void sendRTL() {
-		this.messageQueue.add(new Message(MessageType.RTL, generateId(), this.id, -1));
+		this.messageQueue.add(new Message(MessageType.RTL, generateId(), this.id, -1, true));
 		this.timeSinceRTL = 0;
 	}
 
@@ -120,17 +120,23 @@ public class Vehicle implements Agent{
 	@Override
 	public void sendMessage() {
         //send an empty message to test the simulation
-        Message m = new Message(MessageType.REGULARMESSAGE, generateId(), this.id, -1);
+        Message m = new Message(MessageType.REGULARMESSAGE, generateId(), this.id, -1, true);
         m.setBroadcaster(this.id);
         this.messageQueue.add(m);
         this.sentMessageDuration.put(m, 0.0);
     }
 
+    private void rebroadcast(Message m) {
+        m.setBroadcaster(this.id);
+        this.sentMessageDuration.put(m, 0.0);
+        this.messageQueue.add(m);
+    }
+
     private void returnACK(Message m) {
-        Message newM = new Message(MessageType.REGULARMESSAGE, generateId(), -1, m.origin());
+        Message newM = new Message(MessageType.REGULARMESSAGE, generateId(), -1, m.origin(), false);
         m.setBroadcaster(this.id);
         this.messageQueue.add(newM);
-        this.sentMessageDuration.put(newM   , 0.0);
+        this.sentMessageDuration.put(newM, 0.0);
     }
 
 	/* (non-Javadoc)
@@ -178,20 +184,20 @@ public class Vehicle implements Agent{
 				receiveRegularMessage(m);
 				break;
 			case DTFO:
-				receivedDTFO(m);
+				receivedDTFO();
 			default: 
 				//log something terrible happened.
 				break;
 		}
 		
 	}
-	private void receivedDTFO(Message m) {
+	private void receivedDTFO() {
 		this.parent = -1;
         this.connected = false;
-		this.messageQueue.add(new Message(MessageType.RTL, generateId(), this.id, -1));
+		this.sendRTL();
 	}
 	private void receiveRTL(Message m) {
-		this.messageQueue.add(new Message(MessageType.OKTL, generateId(), this.id, m.origin()));
+		this.messageQueue.add(new Message(MessageType.OKTL, generateId(), this.id, m.origin(), false));
 	}
 	private void receiveOKTL(Message m) {
 		//update personal map for parent
@@ -214,25 +220,32 @@ public class Vehicle implements Agent{
 
     //could be a forward, message for me, or resend of previous attempt
 	private void receiveRegularMessage(Message m) {
-		if(this.children.contains(m.broadcaster()) || this.parent == m.broadcaster()) {
-            m.setBroadcaster(this.id);
-            this.messageQueue.add(m);
-        } else if (this.parent == m.broadcaster()) {
-
-            for (Message oldM: this.sentMessageDuration.keySet()) {
-                if (oldM.id() == m.id()) {
-                    sentMessageDuration.remove(oldM);
-                }
-            }
-		} else if (this.id == m.destination()) {
-            if (m.origin() == -1 ) {
-                //message came from outside, consider this end of message cycle
-                //yay we got the message
-            } else {
-                //send a reply message
+        if(this.children.contains(m.broadcaster())) {
+            if (this.parent == -1) {
                 this.returnACK(m);
             }
-		}
+            else {
+                this.rebroadcast(m);
+            }
+        }
+        else if (this.parent == m.broadcaster()) {
+            if (m.Up()) {
+                for (Message oldM: this.sentMessageDuration.keySet()) {
+                    if (oldM.id() == m.id()) {
+                        sentMessageDuration.remove(oldM);
+                    }
+                }
+            }
+            else {
+                this.rebroadcast(m);
+            }
+        }
+        else if (this.id == m.destination()) {
+            //it has reached the destination!
+        }
+        else {
+            System.out.println("SOMETHING WENT TERRIBLY WRONG");
+        }
 	}
 	private void receiveOutOfService() {
 		this.sendRTL();

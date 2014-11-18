@@ -13,12 +13,14 @@ public class Message {
 	private int destination;
 	private int broadcaster;
     private int id;
+    private boolean up;
 	
-	public Message(MessageType typ, int id, int originId, int dest) {
+	public Message(MessageType typ, int id, int originId, int dest, boolean up) {
 		this.typ = typ;
 		this.originId = originId;
 		this.destination = dest;
         this.id = id;
+        this.up = up;
 	}
 
     public int id() {
@@ -44,6 +46,10 @@ public class Message {
 	public void setBroadcaster(int id) {
 		this.broadcaster = id;
 	}
+
+    public boolean Up() {
+        return this.up;
+    }
 
     public String toString() {
         return typ+ " : " + id + " : " + originId + " : " + destination + " : " + broadcaster;
