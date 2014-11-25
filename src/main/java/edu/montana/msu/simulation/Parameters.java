@@ -11,11 +11,11 @@ import org.apache.commons.math3.distribution.UniformRealDistribution;
  *
  */
 public class Parameters {
-    public static final int DURATION = 100000; // at .01 timestep is a little over 15 minutes of data.
+    public static final int DURATION = 600000; // at .001 timestep is 10 minutes of data.
     public static final double NORMALHEARTBEAT = 0.25;
     public static final double LOWHEARTBEAT = 0.25;
     public static final double HIGHHEARTBEAT = 0.25;//250 ms
-    public static final int REPLICATIONS = 10;
+    public static final int REPLICATIONS = 3;
     public static final NormalDistribution MEDIUMSPEED = new NormalDistribution(33.5, 2.7);//mps mean of 75 mph, sd of 6 mph
     public static final NormalDistribution HIGHSPEED = new NormalDistribution(33.5, 2.7);
     public static final NormalDistribution LOWSPEED = new NormalDistribution(33.5, 2.7);

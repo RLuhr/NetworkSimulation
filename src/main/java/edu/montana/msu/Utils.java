@@ -26,10 +26,11 @@ public class Utils {
 		return Math.sqrt(Math.pow(loc1.x+loc2.x, 2) + Math.pow(loc1.y+loc2.y, 2)); 
 	}
 
-    public static void setupLog(String name) {
+    public static void setupLog(String name, int version) {
         try {
             // This block configure the logger with handler and formatter
-            fh = new FileHandler(name+".log", true);
+            new File("results/"+name+"/").mkdirs();
+            fh = new FileHandler("results/"+name+"/"+name+"_run"+version+".log", true);
             logger.setUseParentHandlers(false);
             fh.setFormatter(new SimpleFormatter() {
                 public String format(LogRecord record) {
