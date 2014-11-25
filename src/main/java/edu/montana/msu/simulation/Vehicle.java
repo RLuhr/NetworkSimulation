@@ -37,11 +37,11 @@ public class Vehicle implements Agent{
 		this.children = new LinkedList<Integer>();
 		this.timeSinceHeartbeat = 0;
 		this.hasService = true;
-		this.timeToHeartbeat = Parameters.HEARTBEAT;
+		this.timeToHeartbeat = sim.parameters.HEARTBEAT;
 		this.timeSinceRTL = -1; //this allows for instant sendoff of RTL when connection is lost
         this.sentMessageDuration = new HashMap<Message, Double>();
         this.sim = sim;
-        this.connected = false;
+        this.connected = true;
         this.timeWithoutConnection = 0;
         this.hasService = true;
 	}
@@ -50,13 +50,17 @@ public class Vehicle implements Agent{
 	 * @see edu.montana.msu.simulation.Agent#update(double)
 	 */
 	@Override
-	public void update(double timestep, Road road) {
+	public boolean update(double timestep, Road road) {
 		//This should update position information 
 		//as well as add any action that needs to be set in the queue
 		
 		//update location and timing info.
 		this.location = road.newPosition(location, velocity*timestep);
-        if(this.location.x > Parameters.DISTANCETODEADZONE) {
+        if (this.location.x > Parameters.DISTANCETOEND) {
+            return false;
+        }
+
+        if(this.location.x > Parameters.DISTANCETODEADZONE && this.hasService == true) {
             this.hasService = false;
         }
         updateWaitTimes(timestep);
@@ -68,7 +72,7 @@ public class Vehicle implements Agent{
 
         if (!this.hasService) {
             //Check if parent heartbeat times out, if so then notify children of disconnect, and add RTL
-            if(this.timeSinceHeartbeat > Parameters.HEARTBEAT) {
+            if(this.timeSinceHeartbeat > sim.parameters.HEARTBEAT) {
                 //we have disconnected from the network!
                 this.parent = -1;
                 this.sendRTL();
@@ -76,7 +80,7 @@ public class Vehicle implements Agent{
             }
 
             //if you have children and you wait an appropriate time without connection, DTFO
-            if ((this.children.size() > 0) && (Parameters.DTFOWAITTIME > this.timeWithoutConnection)) {
+            if ((this.children.size() > 0) && (sim.parameters.DTFOWAITTIME > this.timeWithoutConnection)) {
                 this.messageQueue.add(new Message(MessageType.DTFO, generateId(), this.id, -1, false)); //ORDER MATTERS
                 this.children.clear();
             }
@@ -92,12 +96,13 @@ public class Vehicle implements Agent{
         if (this.parent != -1) {
             this.connected = sim.isConnected(this.id, this.parent);
         }
+        return true;
 
 	}
 
     private void checkMessageTimings() {
         for (Message m: sentMessageDuration.keySet()) {
-            if ((sentMessageDuration.get(m) > Parameters.HEARTBEAT) && (this.parent != -1)){
+            if ((sentMessageDuration.get(m) > sim.parameters.HEARTBEAT) && (this.parent != -1)){
                 this.messageQueue.add(m);
                 sentMessageDuration.put(m, 0.0);
             }
@@ -275,7 +280,7 @@ public class Vehicle implements Agent{
 
 
     public String logInfo() {
-        String info = "#Vehicle:\n"+this.id;
+        String info = "#*****Vehicle:\n"+this.id;
         info += "\n#Location:\n"+this.location;
         info += "\n#Parent:\n"+this.parent;
         info += "\n#Children:";

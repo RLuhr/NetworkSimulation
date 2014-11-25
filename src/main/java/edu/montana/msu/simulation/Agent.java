@@ -16,7 +16,7 @@ public interface Agent {
 	
 	public Tuple<Double, Double> location();
 
-	public void update(double timestep, Road road);
+	public boolean update(double timestep, Road road);
 	
 	public void receive(Message m);
 	

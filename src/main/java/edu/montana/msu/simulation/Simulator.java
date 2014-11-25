@@ -3,8 +3,10 @@
  */
 package edu.montana.msu.simulation;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 import edu.montana.msu.Tuple;
 import edu.montana.msu.Utils;
@@ -24,17 +26,24 @@ import edu.montana.msu.Utils;
 
 public class Simulator {
 
-	private Tuple<Double, Double> startingPoint = new Tuple<Double, Double>(0.0, 0.0);
-	private Map<Integer, Agent> agentMap = new HashMap<Integer, Agent>();
-	private Road road = new Road();
-	private int maxId = 0;
+    private Tuple<Double, Double> startingPoint = new Tuple<Double, Double>(0.0, 0.0);
+    private Map<Integer, Agent> agentMap = new HashMap<Integer, Agent>();
+    private Road road = new Road();
+    private int maxId = 0;
+    private List<Integer> removalList = new ArrayList<Integer>();
+    public Parameters parameters;
+
+    public Simulator(Parameters parameters) {
+        this.parameters = parameters;
+    }
 	
 	public void run() {
 		int time = 0;
         boolean done = false;
 		while(!done) {
-            Utils.log("#TIMESTEP: "+time);
-            if (Parameters.TRAFFICRATE.sample() < Parameters.TRAFFICCHANCE) {
+            removalList.clear();
+            Utils.log("#=================TIMESTEP: "+time);
+            if (Parameters.TRAFFICRATE.sample() < parameters.TRAFFICCHANCE) {
                 Agent a = this.buildAgent();
                 agentMap.put(a.id(), a);
                 Utils.log("#Vehicle generated: " + a.id());
@@ -43,22 +52,30 @@ public class Simulator {
 				Agent agent = agentMap.get(agentId);
 				
 				Message m = agentMap.get(agentId).getMessage();
-				
-				broadcast(m, agent);
-				
-				agent.update(Parameters.TIMESTEP, road);
+
+                if (m != null) {
+                    broadcast(m, agent);
+                }
+
+				if (!agent.update(Parameters.TIMESTEP, road)) {
+                    removalList.add(agentId);
+                }
+
                 Utils.log(agent.logInfo());
 			}
 			time++;
             if (time > Parameters.DURATION)  {
                 done = true;
             }
+            for (Integer a: removalList) {
+                agentMap.remove(a);
+            }
 		}
 	}
 	
 	private Agent buildAgent() {
 		this.maxId++;
-		double vel = Parameters.SPEED.sample();//normal distribution around speed limit. 75 mph.
+		double vel = parameters.SPEED.sample();//normal distribution around speed limit. 75 mph.
 		return new Vehicle(startingPoint, vel, this.maxId, this);
 	}
 
