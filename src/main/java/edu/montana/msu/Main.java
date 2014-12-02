@@ -57,14 +57,14 @@ public class Main{
         param = new Parameters();
         //Exp set 3: change heartbeat freq
         System.out.println("HEARTBEAT exp set");
-        param.HEARTBEAT = Parameters.HIGHHEARTBEAT;
+        param.HEARTBEAT = Parameters.HIGHHEARTBEATFREQ;
         for (int i = 0; i < Parameters.REPLICATIONS; i++ ) {
             Utils.setupLog("AI_SI_HH_DI",i);
             Simulator sim = new Simulator(param);
             sim.run();
             Utils.closeLog();
         }
-        param.HEARTBEAT = Parameters.LOWHEARTBEAT;
+        param.HEARTBEAT = Parameters.LOWHEARTBEATFREQ;
         for (int i = 0; i < Parameters.REPLICATIONS; i++ ) {
             Utils.setupLog("AI_SI_HL_DI",i);
             Simulator sim = new Simulator(param);

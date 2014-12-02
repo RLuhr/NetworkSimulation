@@ -37,7 +37,7 @@ public class Vehicle implements Agent{
 		this.children = new LinkedList<Integer>();
 		this.timeSinceHeartbeat = 0;
 		this.hasService = true;
-		this.timeToHeartbeat = sim.parameters.HEARTBEAT;
+		this.timeToHeartbeat = sim.parameters.HEARTBEAT*3;
 		this.timeSinceRTL = -1; //this allows for instant sendoff of RTL when connection is lost
         this.sentMessageDuration = new HashMap<Message, Double>();
         this.sim = sim;
@@ -60,14 +60,16 @@ public class Vehicle implements Agent{
             return false;
         }
 
-        if(this.location.x > Parameters.DISTANCETODEADZONE && this.hasService == true) {
+        if((this.location.x > Parameters.DISTANCETODEADZONE) && (this.hasService == true)) {
             this.hasService = false;
+            this.connected = false;
         }
         updateWaitTimes(timestep);
 
-		//If you have children, and its time to heartbeat, do it
+		//If you have children, and its time to heartbeat, do it, reset heartbeat
 		if ((this.timeToHeartbeat <= 0) && (children.size() > 0)) {
 			this.messageQueue.add(new Message(MessageType.HEARTBEAT, generateId(), this.id, -1, true));
+            this.timeToHeartbeat = sim.parameters.HEARTBEAT*3;
 		}
 
         if (!this.hasService) {
