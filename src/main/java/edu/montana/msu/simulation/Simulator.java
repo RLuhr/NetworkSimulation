@@ -40,6 +40,7 @@ public class Simulator {
 	public void run() {
 		int time = 0;
         boolean done = false;
+        Utils.log(parameters);
 		while(!done) {
             removalList.clear();
             Utils.log("#=================TIMESTEP: "+time);
@@ -61,7 +62,7 @@ public class Simulator {
                     removalList.add(agentId);
                 }
 
-                Utils.log(agent.logInfo());
+                Utils.log(agent);
 			}
 			time++;
             if (time > Parameters.DURATION)  {
@@ -80,14 +81,17 @@ public class Simulator {
 	}
 
     public boolean isConnected(int id1, int id2) {
-        return (Utils.distance(agentMap.get(id1).location(), agentMap.get(id2).location()) <= Parameters.BROADCASTDISTANCE);
+        if (!agentMap.containsKey(id1) || !agentMap.containsKey(id2)) {
+            return false;
+        }
+        return (Utils.distance(agentMap.get(id1).location(), agentMap.get(id2).location()) <= this.parameters.BROADCASTDISTANCE);
     }
 	
 	private void broadcast(Message message, Agent origin) {
 		for (Integer agentId: agentMap.keySet()) {
 			Agent newAgent = agentMap.get(agentId);
 			if (agentId != origin.id()) {
-				if (Utils.distance(origin.location(), newAgent.location()) < Parameters.BROADCASTDISTANCE) {
+				if (Utils.distance(origin.location(), newAgent.location()) < this.parameters.BROADCASTDISTANCE) {
 					newAgent.receive(message);
 				}
 			}

@@ -22,5 +22,4 @@ public interface Agent {
 	
 	public void sendMessage();
 
-    public String logInfo();
 }

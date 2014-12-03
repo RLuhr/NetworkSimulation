@@ -17,4 +17,11 @@ public class Road {
 	public Tuple<Double, Double> newPosition(Tuple<Double, Double> oldPosition, double velocity) {
 		return new Tuple<Double, Double>(oldPosition.x+velocity, oldPosition.y);
 	}
+
+    public boolean hasService(Tuple<Double, Double> position, Parameters params) {
+        if (position.x > params.DISTANCETODEADZONE && position.x < (params.DISTANCETODEADZONE+Parameters.DEADZONEDISTANCE)) {
+            return false;
+        }
+        return true;
+    }
 }

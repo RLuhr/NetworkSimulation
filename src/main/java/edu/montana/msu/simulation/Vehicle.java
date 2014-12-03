@@ -24,7 +24,7 @@ public class Vehicle implements Agent{
 	private double timeToHeartbeat;
 	private double timeSinceRTL;
 	private Map<Message, Double> sentMessageDuration;
-    private boolean connected; //NOT TO BE CONFUSED WITH PARENT, THIS SHOWS ACTUAL CONNECTION, PARENT SHOWS EXPECTED CONNECTION
+    private boolean connected; //This is the true existing connection between child/parent, not the expected due to heartbeat.
 	private Simulator sim;
     private double timeWithoutConnection;
 
@@ -41,9 +41,8 @@ public class Vehicle implements Agent{
 		this.timeSinceRTL = -1; //this allows for instant sendoff of RTL when connection is lost
         this.sentMessageDuration = new HashMap<Message, Double>();
         this.sim = sim;
-        this.connected = true;
+        this.connected = false;
         this.timeWithoutConnection = 0;
-        this.hasService = true;
 	}
 	
 	/* (non-Javadoc)
@@ -56,30 +55,23 @@ public class Vehicle implements Agent{
 		
 		//update location and timing info.
 		this.location = road.newPosition(location, velocity*timestep);
-        if (this.location.x > Parameters.TOTALDISTANCE) {
+        if (this.location.x > sim.parameters.TOTALDISTANCE) {
             return false;
         }
 
-        if((this.location.x > Parameters.DISTANCETODEADZONE) && (this.hasService == true)) {
-            this.hasService = false;
-            this.connected = false;
-        }
-        if (this.location.x > (Parameters.DEADZONEDISTANCE+Parameters.DISTANCETODEADZONE)) {
-            this.hasService = true;
-            this.connected = true;
-        }
+        this.hasService = road.hasService(this.location, sim.parameters);
 
         updateWaitTimes(timestep);
 
 		//If you have children, and its time to heartbeat, do it, reset heartbeat
 		if ((this.timeToHeartbeat <= 0) && (children.size() > 0)) {
 			this.messageQueue.add(new Message(MessageType.HEARTBEAT, generateId(), this.id, -1, true));
-            this.timeToHeartbeat = sim.parameters.HEARTBEAT*3;
+            this.timeToHeartbeat = sim.parameters.HEARTBEAT;
 		}
 
         if (!this.hasService) {
             //Check if parent heartbeat times out, if so then notify children of disconnect, and add RTL
-            if(this.timeSinceHeartbeat > sim.parameters.HEARTBEAT) {
+            if(this.timeSinceHeartbeat > sim.parameters.HEARTBEAT*3) {
                 //we have disconnected from the network!
                 this.parent = -1;
                 this.sendRTL();
@@ -126,7 +118,7 @@ public class Vehicle implements Agent{
             sentMessageDuration.put(m, time + timestep);
         }
         this.timeSinceHeartbeat += timestep;
-        if(this.timeToHeartbeat > 0) {
+        if(this.children.size() > 0) {
             this.timeToHeartbeat -= timestep;
         }
         if ((this.parent == -1) && (this.hasService == false)) {
@@ -204,39 +196,48 @@ public class Vehicle implements Agent{
 			case HEARTBEAT:
 				receiveHeartbeat(m);
 				break;
-			case OUTOFSERVICE:
-				receiveOutOfService();
-				break;
-			case REGAINSERVICE:
-				receiveRegainService();
-				break;
+//			case OUTOFSERVICE:
+//				receiveOutOfService();
+//				break;
+//			case REGAINSERVICE:
+//				receiveRegainService();
+//				break;
 			case REGULARMESSAGE:
 				receiveRegularMessage(m);
 				break;
 			case DTFO:
-				receivedDTFO();
+				receivedDTFO(m);
 			default: 
 				//log something terrible happened.
 				break;
 		}
 		
 	}
-	private void receivedDTFO() {
-		this.parent = -1;
-        this.connected = false;
-		this.sendRTL();
+	private void receivedDTFO(Message m) {
+        if (m.broadcaster() == this.parent) {
+            this.parent = -1;
+            this.connected = false;
+            this.sendRTL();
+        }
 	}
 	private void receiveRTL(Message m) {
-		this.messageQueue.add(new Message(MessageType.OKTL, generateId(), this.id, m.origin(), false));
-	}
+        if (this.connected || this.hasService) {
+            this.messageQueue.add(new Message(MessageType.OKTL, generateId(), this.id, m.origin(), false));
+        }
+    }
 	private void receiveOKTL(Message m) {
 		//update personal map for parent
-		this.parent = m.origin();
-        this.connected = true;
-		this.timeSinceHeartbeat = 0;
+        if (m.destination() == this.id) {
+            this.parent = m.origin();
+            this.connected = true;
+            this.timeSinceHeartbeat = 0;
+        }
 	}
 	private void receiveXTL(Message m) {
-		this.children.add(m.origin());
+		if (m.destination() == this.id) {
+            this.children.add(m.origin());
+        }
+
 	}
 	private void receiveHeartbeat(Message m) {
         if (this.parent == m.origin()) {
@@ -277,16 +278,16 @@ public class Vehicle implements Agent{
             System.out.println("SOMETHING WENT TERRIBLY WRONG");
         }
 	}
-	private void receiveOutOfService() {
-		this.sendRTL();
-		this.hasService = false;
-	}
-	private void receiveRegainService() {
-		this.hasService = true;
-	}
+//	private void receiveOutOfService() {
+//		this.sendRTL();
+//		this.hasService = false;
+//	}
+//	private void receiveRegainService() {
+//		this.hasService = true;
+//	}
 
 
-    public String logInfo() {
+    public String toString() {
         String info = "#*****Vehicle:\n"+this.id;
         info += "\n#Location:\n"+this.location;
         info += "\n#Parent:\n"+this.parent;
@@ -298,6 +299,7 @@ public class Vehicle implements Agent{
         for (Message m:this.messageQueue) { //this may destroy the message queue... check this
             info += "\n"+m.toString();
         }
+        info += "\n#HasService:\n"+this.hasService;
         info += "\n#ShouldBeConnected:\n"+this.connected;
 
         return info;
