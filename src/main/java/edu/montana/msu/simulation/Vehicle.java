@@ -56,7 +56,7 @@ public class Vehicle implements Agent{
 		
 		//update location and timing info.
 		this.location = road.newPosition(location, velocity*timestep);
-        if (this.location.x > Parameters.DISTANCETOEND) {
+        if (this.location.x > Parameters.TOTALDISTANCE) {
             return false;
         }
 
@@ -64,6 +64,11 @@ public class Vehicle implements Agent{
             this.hasService = false;
             this.connected = false;
         }
+        if (this.location.x > (Parameters.DEADZONEDISTANCE+Parameters.DISTANCETODEADZONE)) {
+            this.hasService = true;
+            this.connected = true;
+        }
+
         updateWaitTimes(timestep);
 
 		//If you have children, and its time to heartbeat, do it, reset heartbeat
