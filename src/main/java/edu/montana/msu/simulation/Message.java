@@ -3,6 +3,8 @@
  */
 package edu.montana.msu.simulation;
 
+import java.util.Set;
+
 /**
  * @author Rachael Luhr, Ryan Nix, Kathryn Manning
  *
@@ -14,14 +16,20 @@ public class Message {
 	private int broadcaster;
     private int id;
     private boolean up;
+    private Set<Integer> childlist;
 	
-	public Message(MessageType typ, int id, int originId, int dest, boolean up) {
+	public Message(MessageType typ, int id, int originId, int dest, boolean up, Set<Integer> childlist) {
 		this.typ = typ;
 		this.originId = originId;
 		this.destination = dest;
         this.id = id;
         this.up = up;
+        this.childlist = childlist;
 	}
+
+    public Set<Integer> getChildlist() {
+        return this.childlist;
+    }
 
     public int id() {
         return this.id;

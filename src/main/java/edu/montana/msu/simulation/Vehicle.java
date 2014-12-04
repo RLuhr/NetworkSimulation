@@ -18,7 +18,7 @@ public class Vehicle implements Agent{
 	private Tuple<Double,Double> location;
 	private int id;
 	private int parent;
-	private List<Integer> children;
+	private Set<Integer> children;
 	private double timeSinceHeartbeat;
 	private boolean hasService;
 	private double timeToHeartbeat;
@@ -34,7 +34,7 @@ public class Vehicle implements Agent{
 		this.velocity = vel;
 		this.id = id;
 		this.parent = -1;
-		this.children = new LinkedList<Integer>();
+		this.children = new HashSet<Integer>();
 		this.timeSinceHeartbeat = 0;
 		this.hasService = true;
 		this.timeToHeartbeat = sim.parameters.HEARTBEAT*3;
@@ -65,7 +65,7 @@ public class Vehicle implements Agent{
 
 		//If you have children, and its time to heartbeat, do it, reset heartbeat
 		if ((this.timeToHeartbeat <= 0) && (children.size() > 0)) {
-			this.messageQueue.add(new Message(MessageType.HEARTBEAT, generateId(), this.id, -1, true));
+			this.messageQueue.add(new Message(MessageType.HEARTBEAT, generateId(), this.id, -1, true, null));
             this.timeToHeartbeat = sim.parameters.HEARTBEAT;
 		}
 
@@ -80,7 +80,7 @@ public class Vehicle implements Agent{
 
             //if you have children and you wait an appropriate time without connection, DTFO
             if ((this.children.size() > 0) && (sim.parameters.DTFOWAITTIME > this.timeWithoutConnection)) {
-                this.messageQueue.add(new Message(MessageType.DTFO, generateId(), this.id, -1, false)); //ORDER MATTERS
+                this.messageQueue.add(new Message(MessageType.DTFO, generateId(), this.id, -1, false, children)); //ORDER MATTERS
                 this.children.clear();
             }
 
@@ -127,7 +127,7 @@ public class Vehicle implements Agent{
     }
 	
 	private void sendRTL() {
-		this.messageQueue.add(new Message(MessageType.RTL, generateId(), this.id, -1, true));
+		this.messageQueue.add(new Message(MessageType.RTL, generateId(), this.id, -1, true, children));
 		this.timeSinceRTL = 0;
 	}
 
@@ -142,7 +142,7 @@ public class Vehicle implements Agent{
 	@Override
 	public void sendMessage() {
         //send an empty message to test the simulation
-        Message m = new Message(MessageType.REGULARMESSAGE, generateId(), this.id, -1, true);
+        Message m = new Message(MessageType.REGULARMESSAGE, generateId(), this.id, -1, true, null);
         m.setBroadcaster(this.id);
         this.messageQueue.add(m);
         this.sentMessageDuration.put(m, 0.0);
@@ -155,7 +155,7 @@ public class Vehicle implements Agent{
     }
 
     private void returnACK(Message m) {
-        Message newM = new Message(MessageType.REGULARMESSAGE, generateId(), -1, m.origin(), false);
+        Message newM = new Message(MessageType.REGULARMESSAGE, generateId(), -1, m.origin(), false, null);
         m.setBroadcaster(this.id);
         this.messageQueue.add(newM);
         this.sentMessageDuration.put(newM, 0.0);
@@ -196,23 +196,24 @@ public class Vehicle implements Agent{
 			case HEARTBEAT:
 				receiveHeartbeat(m);
 				break;
-//			case OUTOFSERVICE:
-//				receiveOutOfService();
-//				break;
-//			case REGAINSERVICE:
-//				receiveRegainService();
-//				break;
 			case REGULARMESSAGE:
 				receiveRegularMessage(m);
 				break;
 			case DTFO:
 				receivedDTFO(m);
+                break;
+            case UCL:
+                updateChildList(m);
+                break;
 			default: 
 				//log something terrible happened.
 				break;
 		}
 		
 	}
+    private void updateChildList(Message m) {
+        this.children.addAll(m.getChildlist());
+    }
 	private void receivedDTFO(Message m) {
         if (m.broadcaster() == this.parent) {
             this.parent = -1;
@@ -221,8 +222,8 @@ public class Vehicle implements Agent{
         }
 	}
 	private void receiveRTL(Message m) {
-        if (this.connected || this.hasService) {
-            this.messageQueue.add(new Message(MessageType.OKTL, generateId(), this.id, m.origin(), false));
+        if ((this.connected || this.hasService) && (!m.getChildlist().contains(this.id))) {
+            this.messageQueue.add(new Message(MessageType.OKTL, generateId(), this.id, m.origin(), false, null));
         }
     }
 	private void receiveOKTL(Message m) {
@@ -267,7 +268,7 @@ public class Vehicle implements Agent{
                     }
                 }
             }
-            else {
+            else if (this.children.contains(m.destination())){
                 this.rebroadcast(m);
             }
         }
@@ -278,14 +279,6 @@ public class Vehicle implements Agent{
             System.out.println("SOMETHING WENT TERRIBLY WRONG");
         }
 	}
-//	private void receiveOutOfService() {
-//		this.sendRTL();
-//		this.hasService = false;
-//	}
-//	private void receiveRegainService() {
-//		this.hasService = true;
-//	}
-
 
     public String toString() {
         String info = "#*****Vehicle:\n"+this.id;
