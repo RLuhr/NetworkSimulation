@@ -8,7 +8,7 @@ import edu.montana.msu.Tuple;
  * @author Rachael Luhr, Ryan Nix, Kathryn Manning
  *
  */
-public interface Agent {
+public interface IAgent {
 	
 	public Message getMessage();
 	

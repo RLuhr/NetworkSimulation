@@ -4,11 +4,7 @@
 package edu.montana.msu;
 
 
-import edu.montana.msu.simulation.Agent;
-import edu.montana.msu.simulation.Simulator;
-
 import java.io.File;
-import java.io.IOException;
 import java.lang.Math;
 import java.util.logging.*;
 
@@ -29,6 +25,7 @@ public class Utils {
     public static void setupLog(String name, int version) {
         try {
             // This block configure the logger with handler and formatter
+
             new File("results/"+name+"/").mkdirs();
             fh = new FileHandler("results/"+name+"/"+name+"_run"+version+".log", false);
             logger.setUseParentHandlers(false);

@@ -51,7 +51,7 @@ public class Parameters {
                +"\n#Heartbeat: " +HEARTBEAT
                +"\n#Speed: " +SPEED.getMean()
                +"\n#TrafficChance: "+(TRAFFICCHANCE/TIMESTEP)
-               +"\nDTFOWaitTime: " + DTFOWAITTIME;
+               +"\n#DTFOWaitTime: " + DTFOWAITTIME;
     }
 }
 

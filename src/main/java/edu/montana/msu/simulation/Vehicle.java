@@ -11,7 +11,7 @@ import edu.montana.msu.Tuple;
  * @author Rachael Luhr, Ryan Nix, Kathryn Manning
  *
  */
-public class Vehicle implements Agent{
+public class Vehicle implements IAgent {
 
 	private Queue<Message> messageQueue;
 	private double velocity;

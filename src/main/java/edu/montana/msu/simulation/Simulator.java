@@ -27,7 +27,7 @@ import edu.montana.msu.Utils;
 public class Simulator {
 
     private Tuple<Double, Double> startingPoint = new Tuple<Double, Double>(0.0, 0.0);
-    private Map<Integer, Agent> agentMap = new HashMap<Integer, Agent>();
+    private Map<Integer, IAgent> agentMap = new HashMap<Integer, IAgent>();
     private Road road = new Road();
     private int maxId = 0;
     private List<Integer> removalList = new ArrayList<Integer>();
@@ -45,24 +45,24 @@ public class Simulator {
             removalList.clear();
             Utils.log("#=================TIMESTEP: "+time);
             if (Parameters.TRAFFICRATE.sample() < parameters.TRAFFICCHANCE) {
-                Agent a = this.buildAgent();
+                IAgent a = this.buildAgent();
                 agentMap.put(a.id(), a);
                 Utils.log("#Vehicle generated: " + a.id());
             }
 			for (Integer agentId:agentMap.keySet()) {
-				Agent agent = agentMap.get(agentId);
+				IAgent IAgent = agentMap.get(agentId);
 				
 				Message m = agentMap.get(agentId).getMessage();
 
                 if (m != null) {
-                    broadcast(m, agent);
+                    broadcast(m, IAgent);
                 }
 
-				if (!agent.update(Parameters.TIMESTEP, road)) {
+				if (!IAgent.update(Parameters.TIMESTEP, road)) {
                     removalList.add(agentId);
                 }
 
-                Utils.log(agent);
+                Utils.log(IAgent);
 			}
 			time++;
             if (time > Parameters.DURATION)  {
@@ -74,7 +74,7 @@ public class Simulator {
 		}
 	}
 	
-	private Agent buildAgent() {
+	private IAgent buildAgent() {
 		this.maxId++;
 		double vel = parameters.SPEED.sample();//normal distribution around speed limit. 75 mph.
 		return new Vehicle(startingPoint, vel, this.maxId, this);
@@ -87,12 +87,12 @@ public class Simulator {
         return (Utils.distance(agentMap.get(id1).location(), agentMap.get(id2).location()) <= this.parameters.BROADCASTDISTANCE);
     }
 	
-	private void broadcast(Message message, Agent origin) {
+	private void broadcast(Message message, IAgent origin) {
 		for (Integer agentId: agentMap.keySet()) {
-			Agent newAgent = agentMap.get(agentId);
+			IAgent newIAgent = agentMap.get(agentId);
 			if (agentId != origin.id()) {
-				if (Utils.distance(origin.location(), newAgent.location()) < this.parameters.BROADCASTDISTANCE) {
-					newAgent.receive(message);
+				if (Utils.distance(origin.location(), newIAgent.location()) < this.parameters.BROADCASTDISTANCE) {
+					newIAgent.receive(message);
 				}
 			}
 		}
